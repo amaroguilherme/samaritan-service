@@ -1,0 +1,8 @@
+flask
+flask-cors
+Flask-JWT-Extended
+psycopg2-binary
+pyjwt
+python-dotenv
+sqlalchemy-utils
+sqlalchemy
