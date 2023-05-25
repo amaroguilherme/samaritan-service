@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, Integer, String
+from sqlalchemy import Column, Float, Integer, String, select
 from storage.base import Base, db_session
 
 class User(Base):
@@ -28,3 +28,15 @@ class User(Base):
       db_session.commit()
 
       return user
+    
+    @classmethod
+    def get(cls, _username=None):
+      user = (
+              db_session.query(User)
+                  .filter(User.username == _username)
+                      .first()
+            )
+      
+      return user
+
+      
