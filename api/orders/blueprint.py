@@ -11,17 +11,15 @@ def create():
     description = request.form.get('description')
     amount = request.form.get('amount')
 
-    user = User.get(username)
-
     try:
         Order.add(
-            _owner_id=user.id,
+            _owner_name=username,
             _description=description,
             _amount=amount,
             _is_active=True
         )
     
-    except:
+    except Exception as e:
         return jsonify(dict(message="Change this message")), 500
     
     return jsonify(dict(message="Order created")), 200
@@ -74,3 +72,24 @@ def delete(id):
         return jsonify(dict(message="Change this message")), 500
 
     return jsonify(dict(message="Order deleted")), 200
+
+@orders.route('close/<id>', methods=['PATCH'])
+def close(id):
+    buyer_name = request.form.get('buyer_name')
+    fields = {
+                "buyer_name": buyer_name,
+                "is_active": False
+            }
+    try:
+        for field in fields:
+            Order.update(
+                id,
+                {
+                    field: fields.get(field)
+                }
+            )
+        
+    except Exception as e:
+        return jsonify(dict(message="Change this message")), 500
+
+    return jsonify(dict(message="Transaction completed")), 200
