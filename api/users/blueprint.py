@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, request
 from storage.base import db_session
 from api.users.models import User, UserProfile
-from utils import encode
-from api.users.helpers import Helpers
+from utils import encode, encode_auth_token, decode_auth_token
 
 users = Blueprint('users', __name__)
 
@@ -35,7 +34,7 @@ def create():
             _user_id=current_user.id,
         )
     
-        auth_token = Helpers.encode_auth_token(current_user.id)
+        auth_token = encode_auth_token(current_user.id)
 
         return jsonify(dict(user=username, data="User Added", auth_token=auth_token)), 200
     
@@ -43,6 +42,7 @@ def create():
         return jsonify(dict(message="Change this message")), 500
     
 @users.route('/update/user/<id>', methods=['PATCH'])
+@decode_auth_token
 def update_user(id):
     fields = request.form
     try:
@@ -60,6 +60,7 @@ def update_user(id):
     return jsonify(dict(message="User Profile updated")), 200
 
 @users.route('/update/balance/<id>', methods=['PATCH'])
+@decode_auth_token
 def update_balance(id):
     amount = float(request.form.get('amount'))
 
@@ -95,7 +96,7 @@ def login():
                         .first()
             )
         if user and (password + user.salt) == (user.password + user.salt):
-            auth_token = Helpers.encode_auth_token(user.id)
+            auth_token = encode_auth_token(user.id)
         if auth_token:
             return jsonify(message='Login Successful', auth_token=auth_token), 200
         else:

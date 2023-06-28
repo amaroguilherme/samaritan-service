@@ -1,11 +1,12 @@
 from flask import Blueprint, jsonify, request
 
 from api.orders.models import Order
-from api.users.models import User
+from utils import decode_auth_token
 
 orders = Blueprint('orders', __name__)
 
 @orders.route('/create', methods=['POST'])
+@decode_auth_token
 def create():
     username = request.form.get('username')
     description = request.form.get('description')
@@ -25,6 +26,7 @@ def create():
     return jsonify(dict(message="Order created")), 200
 
 @orders.route('/get/<id>', methods=['GET'])
+@decode_auth_token
 def get(id):
     try:
         current_order = Order.get(
@@ -37,6 +39,7 @@ def get(id):
     return jsonify(current_order), 200
 
 @orders.route('/update/<id>', methods=['PATCH'])
+@decode_auth_token
 def update(id):
     fields = request.form
     try:
@@ -54,6 +57,7 @@ def update(id):
     return jsonify(dict(message="Order updated")), 200
 
 @orders.route('/list', methods=['GET'])
+@decode_auth_token
 def list():
     try:
         orders = Order.list()
@@ -64,6 +68,7 @@ def list():
     return jsonify(dict(orders=orders)), 200
 
 @orders.route('delete/<id>', methods=['DELETE'])
+@decode_auth_token
 def delete(id):
     try:
         Order.delete(id)
@@ -74,6 +79,7 @@ def delete(id):
     return jsonify(dict(message="Order deleted")), 200
 
 @orders.route('close/<id>', methods=['PATCH'])
+@decode_auth_token
 def close(id):
     buyer_name = request.form.get('buyer_name')
     fields = {
