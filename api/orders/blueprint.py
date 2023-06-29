@@ -21,9 +21,9 @@ def create():
         )
     
     except Exception as e:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
-    return jsonify(dict(message="Order created")), 200
+    return jsonify(dict(message=f"A order was created for the user {username}")), 200
 
 @orders.route('/get/<id>', methods=['GET'])
 @decode_auth_token
@@ -34,9 +34,9 @@ def get(id):
         )
         
     except:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
-    return jsonify(current_order), 200
+    return jsonify(dict(order=current_order)), 200
 
 @orders.route('/update/<id>', methods=['PATCH'])
 @decode_auth_token
@@ -52,9 +52,9 @@ def update(id):
             )
 
     except Exception as e:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
-    return jsonify(dict(message="Order updated")), 200
+    return jsonify(dict(message=f"The order of id number {id} was updated.")), 200
 
 @orders.route('/list', methods=['GET'])
 @decode_auth_token
@@ -63,7 +63,7 @@ def list():
         orders = Order.list()
 
     except:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(orders=orders)), 200
 
@@ -74,9 +74,9 @@ def delete(id):
         Order.delete(id)
 
     except:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
-    return jsonify(dict(message="Order deleted")), 200
+    return jsonify(dict(message=f"The order of id number {id} was deleted")), 200
 
 @orders.route('close/<id>', methods=['PATCH'])
 @decode_auth_token
@@ -96,6 +96,6 @@ def close(id):
             )
         
     except Exception as e:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
-    return jsonify(dict(message="Transaction completed")), 200
+    return jsonify(dict(message=f"The order of id number {id} was completed")), 200

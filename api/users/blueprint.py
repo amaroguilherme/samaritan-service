@@ -16,7 +16,7 @@ def create():
             )
 
     if current_user:
-        return jsonify(dict(message="Username is already in use")), 400
+        return jsonify(dict(message=f"A user called {username} already exists.")), 400
 
     encoded_password = encode(request.form.get('password'))
 
@@ -30,16 +30,16 @@ def create():
             db_session=db_session
         )
 
-        user_profile = UserProfile.add(
+        UserProfile.add(
             _user_id=current_user.id,
         )
     
         auth_token = encode_auth_token(current_user.id)
 
-        return jsonify(dict(user=username, data="User Added", auth_token=auth_token)), 200
+        return jsonify(dict(message=f"A user named {username} was created.", auth_token=auth_token)), 200
     
     except:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
 @users.route('/update/user/<id>', methods=['PATCH'])
 @decode_auth_token
@@ -55,9 +55,9 @@ def update_user(id):
             )
 
     except Exception as e:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
-    return jsonify(dict(message="User Profile updated")), 200
+    return jsonify(dict(message=f"The requested fields for the user with id number {id} was updated.")), 200
 
 @users.route('/update/balance/<id>', methods=['PATCH'])
 @decode_auth_token
@@ -79,9 +79,9 @@ def update_balance(id):
         )
 
     except Exception as e:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
-    return jsonify(dict(message="User Profile updated")), 200
+    return jsonify(dict(message=f"The balance for the user with id number {id} was updated")), 200
 
 
 @users.route('/login', methods=['POST'])
@@ -103,4 +103,4 @@ def login():
             return jsonify(dict(message="Unauthorized")), 401
 
     except:
-        return jsonify(dict(message="Change this message")), 500
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
