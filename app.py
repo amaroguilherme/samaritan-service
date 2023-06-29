@@ -8,14 +8,12 @@ from storage.base import Base, db_session
 from api.orders.blueprint import orders
 from api.users.blueprint import users
 
-def create_database():
-  engine = create_engine(DATABASE_URI)
+def create_database(URI):
+  engine = create_engine(URI)
   Base.metadata.create_all(engine)
   db_session.configure(bind=engine)
 
 def create_app():
-  create_database()
-
   app = Flask(__name__)
   CORS(app, resources={r'/orders/*': {'origins': 'http://localhost:4200'}})
   CORS(app, resources={r'/users/*': {'origins': 'http://localhost:4200'}})
@@ -26,3 +24,4 @@ def create_app():
   return app
 
 app = create_app()
+create_database(DATABASE_URI)
