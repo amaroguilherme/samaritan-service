@@ -42,6 +42,28 @@ def create():
         log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
+@users.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username')
+    password = encode(request.form.get('password'))["hash"]
+
+    try:
+        user = (
+                db_session.query(User)
+                    .filter(User.username == username)
+                        .first()
+            )
+        if user and (password + user.salt) == (user.password + user.salt):
+            auth_token = encode_auth_token(user.id)
+            if auth_token:
+                return jsonify(message='Login Successful', auth_token=auth_token), 200
+        else:
+            return jsonify(dict(message="Unauthorized")), 401
+
+    except Exception as e:
+        log.exception(e)
+        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
+    
 @users.route('/update/user', methods=['PATCH'])
 @validate_auth_token
 def update_user():
@@ -63,6 +85,7 @@ def update_user():
 
     return jsonify(dict(message=f"The requested fields for the user with id number {user_id} was updated.")), 200
 
+#TODO: THIS SHOULD GET A ORDER ID AND UPDATE THE AMOUNT WITH THE AMOUNT FROM THE RESULT OF THE ORDER QUERY
 @users.route('/update/balance', methods=['PATCH'])
 @validate_auth_token
 def update_balance():
@@ -88,26 +111,3 @@ def update_balance():
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(message=f"The balance for the user with id number {user_id} was updated")), 200
-
-
-@users.route('/login', methods=['POST'])
-def login():
-    username = request.form.get('username')
-    password = encode(request.form.get('password'))["hash"]
-
-    try:
-        user = (
-                db_session.query(User)
-                    .filter(User.username == username)
-                        .first()
-            )
-        if user and (password + user.salt) == (user.password + user.salt):
-            auth_token = encode_auth_token(user.id)
-        if auth_token:
-            return jsonify(message='Login Successful', auth_token=auth_token), 200
-        else:
-            return jsonify(dict(message="Unauthorized")), 401
-
-    except Exception as e:
-        log.exception(e)
-        return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
