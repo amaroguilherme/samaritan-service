@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from storage.base import db_session
 from api.users.models import User, UserProfile
-from utils import encode, encode_auth_token, decode_auth_token
+from utils import encode, encode_auth_token, decode_auth_token, validate_auth_token
 
 users = Blueprint('users', __name__)
 
@@ -42,7 +42,7 @@ def create():
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
 @users.route('/update/user/<id>', methods=['PATCH'])
-@decode_auth_token
+@validate_auth_token
 def update_user(id):
     fields = request.form
     try:
@@ -60,7 +60,7 @@ def update_user(id):
     return jsonify(dict(message=f"The requested fields for the user with id number {id} was updated.")), 200
 
 @users.route('/update/balance/<id>', methods=['PATCH'])
-@decode_auth_token
+@validate_auth_token
 def update_balance(id):
     amount = float(request.form.get('amount'))
 

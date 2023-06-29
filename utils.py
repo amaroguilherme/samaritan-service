@@ -37,13 +37,23 @@ def encode_auth_token(user_id):
             )
         except Exception as e:
             return e
-
-def decode_auth_token(func):
+        
+@staticmethod
+def decode_auth_token(auth_token):
     """
     Decodes the auth token
     :param auth_token:
     :return: integer|string
     """
+    try:
+        payload = jwt.decode(auth_token, SECRET_KEY, algorithms=["HS256"])
+        return payload['sub']
+    except jwt.ExpiredSignatureError:
+        return 'Signature expired. Please log in again.'
+    except jwt.InvalidTokenError:
+        return 'Invalid token. Please log in again.'
+
+def validate_auth_token(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
