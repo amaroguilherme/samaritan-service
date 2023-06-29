@@ -1,7 +1,12 @@
+import logging
+
 from flask import Blueprint, jsonify, request
 
 from api.orders.models import Order
 from utils import decode_auth_token, validate_auth_token
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
 
 orders = Blueprint('orders', __name__)
 
@@ -21,6 +26,7 @@ def create():
         )
     
     except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
     return jsonify(dict(message=f"A order was created for the user with id number {user_id}")), 200
@@ -33,7 +39,8 @@ def get(id):
             _id=id
         )
         
-    except:
+    except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
     return jsonify(dict(order=current_order)), 200
@@ -52,6 +59,7 @@ def update(id):
             )
 
     except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(message=f"The order of id number {id} was updated.")), 200
@@ -62,7 +70,8 @@ def list():
     try:
         orders = Order.list()
 
-    except:
+    except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(orders=orders)), 200
@@ -73,7 +82,8 @@ def delete(id):
     try:
         Order.delete(id)
 
-    except:
+    except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(message=f"The order of id number {id} was deleted")), 200
@@ -96,6 +106,7 @@ def close(id):
             )
         
     except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(message=f"The order of id number {id} was completed")), 200

@@ -1,7 +1,12 @@
+import logging
+
 from flask import Blueprint, jsonify, request
 from storage.base import db_session
 from api.users.models import User
 from utils import encode, encode_auth_token, decode_auth_token, validate_auth_token
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
 
 users = Blueprint('users', __name__)
 
@@ -34,6 +39,7 @@ def create():
         return jsonify(dict(message=f"A user named {username} was created.", auth_token=auth_token)), 200
     
     except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
 @users.route('/update/user', methods=['PATCH'])
@@ -52,6 +58,7 @@ def update_user():
             )
 
     except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(message=f"The requested fields for the user with id number {user_id} was updated.")), 200
@@ -77,6 +84,7 @@ def update_balance():
         )
 
     except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(message=f"The balance for the user with id number {user_id} was updated")), 200
@@ -100,5 +108,6 @@ def login():
         else:
             return jsonify(dict(message="Unauthorized")), 401
 
-    except:
+    except Exception as e:
+        log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
