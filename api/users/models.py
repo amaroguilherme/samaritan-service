@@ -7,21 +7,25 @@ class User(Base):
     username = Column(String)
     password = Column(String(120))
     salt = Column(String(120))
+    about = Column(String(120))
+    likes = Column(ARRAY(String))
+    dislikes = Column(ARRAY(String))
     total_amount = Column(Float(2))
-    contributions = Column(Integer)
 
     def __repr__(self):
-        return "<User(id='{}', username='{}', password='{}', salt='{}', total_amount='{}', contributions='{}'"\
-                .format(self.id, self.username, self.password, self.salt, self.total_amount, self.contributions)
+        return "<User(id='{}', username='{}', password='{}', salt='{}', about='{}', likes='{}', dislikes='{}', total_amount='{}'"\
+                .format(self.id, self.username, self.password, self.salt, self.about, self.likes, self.dislikes, self.total_amount)
 
     @classmethod
-    def add(cls, _username=None, _password=None, _salt=None, _total_amount=None, _contributions=None, db_session=db_session):
+    def add(cls, _username=None, _password=None, _salt=None, _about=None, _likes=None, _dislikes=None, _total_amount=None, db_session=db_session):
       user = User()
       user.username = _username
       user.password = _password
       user.salt = _salt
+      user.about = _about
+      user.likes = _likes
+      user.dislikes = _dislikes
       user.total_amount = _total_amount
-      user.contributions = _contributions
 
       db_session.flush()
       db_session.add(user)
@@ -53,47 +57,6 @@ class User(Base):
                 )
         
         db_session.commit()
-    
-class UserProfile(Base):
-   __tablename__ = 'profiles'
-   id = Column(Integer, primary_key=True)
-   user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-   about = Column(String(120))
-   likes = Column(ARRAY(String))
-   dislikes = Column(ARRAY(String))
-
-   def __repr__(self):
-        return "<UserProfile(id='{}', user_id='{}', about='{}', likes='{}', dislikes='{}'"\
-                .format(self.id, self.user_id, self.about, self.likes, self.dislikes)
-   
-   @classmethod
-   def add(cls, _user_id=None, _about=None, _likes=None, _dislikes=None):
-      user_profile = UserProfile()
-      user_profile.user_id = _user_id
-      user_profile.about = _about
-      user_profile.likes = _likes
-      user_profile.dislikes = _dislikes
-
-      db_session.flush()
-      db_session.add(user_profile)
-      db_session.commit()
-
-      return user_profile
-   
-   @classmethod
-   def update(cls, _id, _fields={}):
-      key = list(_fields.keys())[0]
-      value = _fields[key]
-
-      stmt = (
-              db_session.query(UserProfile)
-                  .filter_by(user_id=_id)
-                  .update({
-                      "{}".format(key): value
-                  })
-              )
-      
-      db_session.commit()
 
 
    

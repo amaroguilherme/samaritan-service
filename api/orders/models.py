@@ -4,31 +4,31 @@ from storage.base import Base, db_session
 class Order(Base):
     __tablename__ = 'orders'
     id = Column(Integer, primary_key=True)
-    owner_name = Column(String)
-    buyer_name = Column(String)
+    owner_id = Column(String)
+    buyer_id = Column(String)
     description = Column(String(120))
     amount = Column(Float(2))
     is_active = Column(Boolean)
 
     def __repr__(self):
-        return "<User(id='{}', owner_name='{}', buyer_name='{}', description='{}', amount='{}', is_active='{}'"\
-                .format(self.id, self.owner_name, self.buyer_name, self.description, self.amount, self.is_active)
+        return "<User(id='{}', owner_id='{}', buyer_id='{}', description='{}', amount='{}', is_active='{}'"\
+                .format(self.id, self.owner_id, self.buyer_id, self.description, self.amount, self.is_active)
     
     def to_dict(self):
         return {
            "id": self.id,
-           "owner_name": self.owner_name,
-           "buyer_name": self.buyer_name,
+           "owner_id": self.owner_id,
+           "buyer_id": self.buyer_id,
            "description": self.description,
            "amount": self.amount,
            "is_active": self.is_active
         }
     
     @classmethod
-    def add(cls, _owner_name=None, _buyer_name=None, _description=None, _amount=None, _is_active=None, db_session=db_session):
+    def add(cls, _owner_id=None, _buyer_id=None, _description=None, _amount=None, _is_active=None, db_session=db_session):
       order = Order()
-      order.owner_name = _owner_name
-      order.buyer_name = _buyer_name
+      order.owner_id = _owner_id
+      order.buyer_id = _buyer_id
       order.description = _description
       order.amount = _amount
       order.is_active = _is_active

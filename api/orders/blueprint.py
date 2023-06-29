@@ -8,13 +8,13 @@ orders = Blueprint('orders', __name__)
 @orders.route('/create', methods=['POST'])
 @validate_auth_token
 def create():
-    username = request.form.get('username')
+    user_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
     description = request.form.get('description')
     amount = request.form.get('amount')
 
     try:
         Order.add(
-            _owner_name=username,
+            _owner_id=user_id,
             _description=description,
             _amount=amount,
             _is_active=True
@@ -23,7 +23,7 @@ def create():
     except Exception as e:
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
-    return jsonify(dict(message=f"A order was created for the user {username}")), 200
+    return jsonify(dict(message=f"A order was created for the user with id number {user_id}")), 200
 
 @orders.route('/get/<id>', methods=['GET'])
 @validate_auth_token
@@ -81,9 +81,9 @@ def delete(id):
 @orders.route('close/<id>', methods=['PATCH'])
 @validate_auth_token
 def close(id):
-    buyer_name = request.form.get('buyer_name')
+    buyer_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
     fields = {
-                "buyer_name": buyer_name,
+                "buyer_id": buyer_id,
                 "is_active": False
             }
     try:

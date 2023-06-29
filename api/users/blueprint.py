@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from storage.base import db_session
-from api.users.models import User, UserProfile
+from api.users.models import User
 from utils import encode, encode_auth_token, decode_auth_token, validate_auth_token
 
 users = Blueprint('users', __name__)
@@ -26,29 +26,26 @@ def create():
             _password=encoded_password["hash"],
             _salt=encoded_password["salt"],
             _total_amount=0.00,
-            _contributions=0,
             db_session=db_session
-        )
-
-        UserProfile.add(
-            _user_id=current_user.id,
         )
     
         auth_token = encode_auth_token(current_user.id)
 
         return jsonify(dict(message=f"A user named {username} was created.", auth_token=auth_token)), 200
     
-    except:
+    except Exception as e:
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
     
-@users.route('/update/user/<id>', methods=['PATCH'])
+@users.route('/update/user', methods=['PATCH'])
 @validate_auth_token
-def update_user(id):
+def update_user():
+    user_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
     fields = request.form
+
     try:
         for field in fields:
             User.update(
-                id,
+                user_id,
                 {
                     field: fields.get(field)
                 }
@@ -57,16 +54,17 @@ def update_user(id):
     except Exception as e:
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
-    return jsonify(dict(message=f"The requested fields for the user with id number {id} was updated.")), 200
+    return jsonify(dict(message=f"The requested fields for the user with id number {user_id} was updated.")), 200
 
-@users.route('/update/balance/<id>', methods=['PATCH'])
+@users.route('/update/balance', methods=['PATCH'])
 @validate_auth_token
-def update_balance(id):
+def update_balance():
+    user_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
     amount = float(request.form.get('amount'))
 
     try:
         user = User.get(
-            id
+            user_id
         )
 
         updated_balance = user.total_amount + amount
@@ -81,7 +79,7 @@ def update_balance(id):
     except Exception as e:
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
-    return jsonify(dict(message=f"The balance for the user with id number {id} was updated")), 200
+    return jsonify(dict(message=f"The balance for the user with id number {user_id} was updated")), 200
 
 
 @users.route('/login', methods=['POST'])
