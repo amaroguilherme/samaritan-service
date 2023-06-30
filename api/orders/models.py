@@ -1,5 +1,11 @@
+import logging
+from flask import jsonify
+
 from sqlalchemy import Column, Float, Integer, String, Boolean
 from storage.base import Base, db_session
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
 
 class Order(Base):
     __tablename__ = 'orders'
@@ -41,50 +47,70 @@ class Order(Base):
     
     @classmethod
     def get(cls, _id=None):
-      order = (
-              db_session.query(Order)
-                  .filter(Order.id == _id)
-                      .first()
-            )
+      try:
+        order = (
+                db_session.query(Order)
+                    .filter(Order.id == _id)
+                        .first()
+              )
+        
+        return order.to_dict()
       
-      return order.to_dict()
+      except Exception as e:
+           log.exception(e)
+           return jsonify(dict(message=f'{e}'))
     
     @classmethod
     def update(cls, _id, _fields={}):
-        key = list(_fields.keys())[0]
-        value = _fields[key]
+        try:
+          key = list(_fields.keys())[0]
+          value = _fields[key]
 
-        stmt = (
-                db_session.query(Order)
-                    .filter_by(id=_id)
-                    .update({
-                       "{}".format(key): value
-                    })
-                )
-        
-        db_session.commit()
+          stmt = (
+                  db_session.query(Order)
+                      .filter_by(id=_id)
+                      .update({
+                        "{}".format(key): value
+                      })
+                  )
+          
+          db_session.commit()
+
+        except Exception as e:
+           log.exception(e)
 
     @classmethod
     def list(cls):
-        orders = list()
+        try:
+          orders = list()
 
-        all_orders = (
-          db_session.query(Order)
-            .all()
-        )
+          all_orders = (
+            db_session.query(Order)
+              .all()
+          )
 
-        for order in all_orders:
-          order_obj = order.to_dict()
-          orders.append(order_obj)
+          for order in all_orders:
+            order_obj = order.to_dict()
+            orders.append(order_obj)
 
-        return orders
+          return orders
+        
+        except Exception as e:
+           log.exception(e)
+           return jsonify(dict(message=f'{e}'))
     
     @classmethod
     def delete(cls, _id=None):
-       (
-          db_session.query(Order)
-            .filter_by(id=_id)
-            .delete(synchronize_session=False)
-       )
+      try:
+        (
+            db_session.query(Order)
+              .filter_by(id=_id)
+              .delete(synchronize_session=False)
+        )
 
-       db_session.commit()
+        db_session.commit()
+        
+      except Exception as e:
+           log.exception(e)
+           return jsonify(dict(message=f'{e}'))
+

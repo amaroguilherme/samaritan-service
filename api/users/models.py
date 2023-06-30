@@ -1,5 +1,11 @@
+import logging
+from flask import jsonify
+
 from sqlalchemy import ARRAY, Column, Float, ForeignKey, Integer, String, select
 from storage.base import Base, db_session
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
 
 class User(Base):
     __tablename__ = 'users'
@@ -45,21 +51,22 @@ class User(Base):
     
     @classmethod
     def update(cls, _id, _fields={}):
-        key = list(_fields.keys())[0]
-        value = _fields[key]
-      
-        stmt = (
-                db_session.query(User)
-                    .filter_by(id=_id)
-                    .update({
-                       "{}".format(key): value
-                    })
-                )
+        try:
+          key = list(_fields.keys())[0]
+          value = _fields[key]
         
-        db_session.commit()
+          stmt = (
+                  db_session.query(User)
+                      .filter_by(id=_id)
+                      .update({
+                        "{}".format(key): value
+                      })
+                  )
+          
+          db_session.commit()
 
-
-   
-   
+        except Exception as e:
+           log.exception(e)
+           return jsonify(dict(message=f'{e}'))
 
       

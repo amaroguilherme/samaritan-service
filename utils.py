@@ -65,3 +65,15 @@ def validate_auth_token(func):
             return jsonify(dict(message='Invalid token. Please log in again.')), 401
         
     return wrapper
+
+def validate_fields(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        blacklisted_items = ["total_amount"]
+        if all(item not in blacklisted_items for item in request.form.keys()):
+            return func(*args, **kwargs)
+            
+        else:
+            return jsonify(dict(message='Some fields are not allowed. Please review it and try again.')), 400
+        
+    return wrapper

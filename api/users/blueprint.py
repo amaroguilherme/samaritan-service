@@ -1,9 +1,10 @@
 import logging
 
 from flask import Blueprint, jsonify, request
+from api.orders.models import Order
 from storage.base import db_session
 from api.users.models import User
-from utils import encode, encode_auth_token, decode_auth_token, validate_auth_token
+from utils import encode, encode_auth_token, decode_auth_token, validate_auth_token, validate_fields
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -63,9 +64,10 @@ def login():
     except Exception as e:
         log.exception(e)
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
-    
+
 @users.route('/update/user', methods=['PATCH'])
 @validate_auth_token
+@validate_fields
 def update_user():
     user_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
     fields = request.form
@@ -85,24 +87,44 @@ def update_user():
 
     return jsonify(dict(message=f"The requested fields for the user with id number {user_id} was updated.")), 200
 
-#TODO: THIS SHOULD GET A ORDER ID AND UPDATE THE AMOUNT WITH THE AMOUNT FROM THE RESULT OF THE ORDER QUERY
+#TODO: THIS SHOULD VERIFY FIRST IF THE BUYER HAS ENOUGH BALANCE TO COMPLETE THE TRANSACTION
 @users.route('/update/balance', methods=['PATCH'])
 @validate_auth_token
 def update_balance():
     user_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
-    amount = float(request.form.get('amount'))
+    order_id = request.form.get('order_id')
 
     try:
-        user = User.get(
-            user_id
+        order = Order.get(
+            order_id
         )
-
-        updated_balance = user.total_amount + amount
+        
+        buyer = (
+                db_session.query(User)
+                    .filter(User.id == order['buyer_id'] and user_id == order['buyer_id'])
+                    .first()
+            )
+        
+        owner = (
+                db_session.query(User)
+                    .filter(User.id == order['owner_id'])
+                    .first()
+            )
+        
+        buyer_updated_balance = buyer.total_amount - order['amount']
+        owner_updated_balance = owner.total_amount + order['amount']
 
         User.update(
-            id,
+            order['buyer_id'],
             {
-                "total_amount": updated_balance
+                "total_amount": buyer_updated_balance
+            }
+        )
+
+        User.update(
+            order['owner_id'],
+            {
+                "total_amount": owner_updated_balance
             }
         )
 

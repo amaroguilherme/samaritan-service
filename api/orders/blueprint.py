@@ -88,6 +88,7 @@ def delete(id):
 
     return jsonify(dict(message=f"The order of id number {id} was deleted")), 200
 
+#TODO: THIS SHOULD NULLIFY BUYER_ID IF THE OWNER CLOSES THE ORDER
 @orders.route('close/<id>', methods=['PATCH'])
 @validate_auth_token
 def close(id):
