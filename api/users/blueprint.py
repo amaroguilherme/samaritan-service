@@ -87,7 +87,7 @@ def update_user():
 
     return jsonify(dict(message=f"The requested fields for the user with id number {user_id} was updated.")), 200
 
-#TODO: THIS SHOULD VERIFY FIRST IF THE BUYER HAS ENOUGH BALANCE TO COMPLETE THE TRANSACTION
+#TODO: THIS SHOULD BE DEPRECATED AND MOVED TO ORDERS BLUEPRINT, UNDER CLOSE ROUTE
 @users.route('/update/balance', methods=['PATCH'])
 @validate_auth_token
 def update_balance():

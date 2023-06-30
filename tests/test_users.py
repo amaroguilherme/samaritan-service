@@ -1,10 +1,9 @@
 import json
 
 from sqlalchemy import create_engine
-from app import create_app, create_database
+from app import create_app
 from storage.base import Base, db_session
 from storage.config import DATABASE_URI_TEST
-from sqlalchemy.sql import text
 
 class TestUsers():
     def setup_class(self):
