@@ -4,6 +4,9 @@ import random
 import datetime
 from flask import jsonify, request
 import jwt
+from api.orders.models import Order
+from api.users.models import User
+from storage.base import db_session
 from storage.config import SECRET_KEY
 
 def encode(string):
@@ -75,5 +78,28 @@ def validate_fields(func):
             
         else:
             return jsonify(dict(message='Some fields are not allowed. Please review it and try again.')), 400
+        
+    return wrapper
+
+def validate_balance(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        buyer_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
+
+        order = Order.get(
+            kwargs['id']
+        )
+        
+        buyer = (
+                db_session.query(User)
+                    .filter(User.id == buyer_id)
+                    .first()
+            )
+        
+        if buyer.total_amount >= order['amount']:
+            return func(*args, **kwargs)
+            
+        else:
+            return jsonify(dict(message='User does not have enough balance to complete this transaction.')), 400
         
     return wrapper

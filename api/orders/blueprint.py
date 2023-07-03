@@ -2,8 +2,10 @@ import logging
 
 from flask import Blueprint, jsonify, request
 
+from storage.base import db_session
+from api.users.models import User
 from api.orders.models import Order
-from utils import decode_auth_token, validate_auth_token
+from utils import decode_auth_token, validate_auth_token, validate_balance
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -88,18 +90,54 @@ def delete(id):
 
     return jsonify(dict(message=f"The order of id number {id} was deleted")), 200
 
-#TODO: THIS SHOULD NULLIFY BUYER_ID IF THE OWNER CLOSES THE ORDER
-#TODO: THIS SHOULD VERIFY FIRST IF THE BUYER HAS ENOUGH BALANCE TO COMPLETE THE TRANSACTION
 #TODO: ADD TESTS TO THIS ROUTE
 @orders.route('close/<id>', methods=['PATCH'])
 @validate_auth_token
+@validate_balance
 def close(id):
     buyer_id = decode_auth_token(request.headers['Authorization'].split('Bearer ')[1])
-    fields = {
-                "buyer_id": buyer_id,
-                "is_active": False
-            }
+    fields = dict(is_active=False)
+
     try:
+        order = (
+                db_session.query(Order)
+                    .filter(Order.id == id and Order.is_active == True)
+                    .first()
+            )
+        
+        buyer = (
+                db_session.query(User)
+                    .filter(User.id == buyer_id)
+                    .first()
+            )
+        
+        owner = (
+                db_session.query(User)
+                    .filter(User.id == order.owner_id)
+                    .first()
+            )
+        
+        buyer_updated_balance = buyer.total_amount - order.amount
+        owner_updated_balance = owner.total_amount + order.amount
+
+        if order.buyer_id != order.owner_id:
+
+            User.update(
+                order.buyer_id,
+                {
+                    "total_amount": buyer_updated_balance
+                }
+            )
+
+            User.update(
+                order.owner_id,
+                {
+                    "total_amount": owner_updated_balance
+                }
+            )
+
+            fields["buyer_id"] = buyer_id
+
         for field in fields:
             Order.update(
                 id,
