@@ -91,6 +91,7 @@ def delete(id):
     return jsonify(dict(message=f"The order of id number {id} was deleted")), 200
 
 #TODO: ADD TESTS TO THIS ROUTE
+#TODO: CREATE ROW-LEVEL LOCKING ON TRANSACTIONS
 @orders.route('close/<id>', methods=['PATCH'])
 @validate_auth_token
 @validate_balance
@@ -104,23 +105,23 @@ def close(id):
                     .filter(Order.id == id and Order.is_active == True)
                     .first()
             )
-        
-        buyer = (
+
+        if order.buyer_id != order.owner_id:
+
+            buyer = (
                 db_session.query(User)
                     .filter(User.id == buyer_id)
                     .first()
             )
         
-        owner = (
-                db_session.query(User)
-                    .filter(User.id == order.owner_id)
-                    .first()
-            )
-        
-        buyer_updated_balance = buyer.total_amount - order.amount
-        owner_updated_balance = owner.total_amount + order.amount
-
-        if order.buyer_id != order.owner_id:
+            owner = (
+                    db_session.query(User)
+                        .filter(User.id == order.owner_id)
+                        .first()
+                )
+            
+            buyer_updated_balance = buyer.total_amount - order.amount
+            owner_updated_balance = owner.total_amount + order.amount
 
             User.update(
                 order.buyer_id,
@@ -151,3 +152,5 @@ def close(id):
         return jsonify(dict(message="Something went wrong. Please, reach out support for further assistance.")), 500
 
     return jsonify(dict(message=f"The order of id number {id} was completed")), 200
+
+#TODO: CREATE ROUTE TO UPDATE BALANCE THROUGH BANK TRANSACTIONS

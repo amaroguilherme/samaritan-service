@@ -1,7 +1,10 @@
 from functools import wraps
 from hashlib import sha256
+
 import random
 import datetime
+import json
+
 from flask import jsonify, request
 import jwt
 from api.orders.models import Order
@@ -95,8 +98,8 @@ def validate_balance(func):
                     .filter(User.id == buyer_id)
                     .first()
             )
-        
-        if buyer.total_amount >= order['amount']:
+
+        if buyer.total_amount >= order['amount'] or int(order['owner_id']) == buyer_id:
             return func(*args, **kwargs)
             
         else:
