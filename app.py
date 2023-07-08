@@ -2,7 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 
 from sqlalchemy import create_engine
-from storage.config import DATABASE_URI
+import stripe
+from storage.config import DATABASE_URI, STRIPE_SECRET_KEY
 from storage.base import Base, db_session
 
 from api.orders.blueprint import orders
@@ -15,6 +16,9 @@ def create_database(URI):
 
 def create_app():
   app = Flask(__name__)
+
+  stripe.api_key = STRIPE_SECRET_KEY
+  
   CORS(app, resources={r'/orders/*': {'origins': 'http://localhost:4200'}})
   CORS(app, resources={r'/users/*': {'origins': 'http://localhost:4200'}})
 

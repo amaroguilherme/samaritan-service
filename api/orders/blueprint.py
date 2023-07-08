@@ -1,6 +1,8 @@
+import json
 import logging
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, redirect, render_template, request
+import stripe
 
 from storage.base import db_session
 from api.users.models import User
@@ -90,8 +92,6 @@ def delete(id):
 
     return jsonify(dict(message=f"The order of id number {id} was deleted")), 200
 
-#TODO: ADD TESTS TO THIS ROUTE
-#TODO: CREATE ROW-LEVEL LOCKING ON TRANSACTIONS
 @orders.route('close/<id>', methods=['PATCH'])
 @validate_auth_token
 @validate_balance
@@ -153,4 +153,40 @@ def close(id):
 
     return jsonify(dict(message=f"The order of id number {id} was completed")), 200
 
-#TODO: CREATE ROUTE TO UPDATE BALANCE THROUGH BANK TRANSACTIONS
+#TODO: UPDATE BALANCE THROUGH BANK TRANSACTIONS
+#TODO: CHANGE HTTP METHODS. SHOULD ONLY ACCEPT POST
+@orders.route('/transaction', methods=['GET'])
+def transaction():
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    'price_data': {
+                        'product_data': {
+                            'name': 'test',
+                        },
+                        'unit_amount': 500,
+                        'currency': 'usd',
+                    },
+                    'quantity': 1,
+                },
+            ],
+            payment_method_types=['card'],
+            mode='payment',
+            success_url=request.host_url + 'orders/transaction/success',
+            cancel_url=request.host_url + 'orders/transaction/cancel',
+        )
+
+    except Exception as e:
+        log.exception(e)
+        
+    return redirect(checkout_session.url)
+
+@orders.route('/transaction/success')
+def success():
+    return render_template('success.html')
+
+
+@orders.route('/transaction/cancel')
+def cancel():
+    return render_template('../templates/cancel.html')

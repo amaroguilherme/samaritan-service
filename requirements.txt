@@ -1,9 +1,12 @@
 flask
 flask-cors
 Flask-JWT-Extended
+flask_swagger_ui
 psycopg2-binary
 pyjwt
+pyngrok
 pytest
 python-dotenv
 sqlalchemy-utils
 sqlalchemy
+stripe
